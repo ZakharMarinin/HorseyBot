@@ -28,7 +28,10 @@ type UseCase interface {
 	CheckUserInChat(ctx context.Context, userName string, chatID int64) (bool, error)
 }
 
-var tempUserState = make(map[int64]*domain.TempUserState)
+var (
+	tempUserState = make(map[int64]*domain.TempUserState)
+	ogoMeter      = make(map[int64]*domain.OgoMeter)
+)
 
 type TgBot struct {
 	log     *slog.Logger

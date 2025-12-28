@@ -170,3 +170,74 @@ func (b *TgBot) UserTimer(ctx context.Context, c telebot.Context, sub domain.Sub
 
 	return nil
 }
+
+func (b *TgBot) OgoMeter(ctx context.Context, c telebot.Context) error {
+	if c.Message().Text == "ого" || c.Message().Text == "juj" {
+		state, err := b.GetOgoMeter(c)
+		if err != nil {
+			return err
+		}
+
+		switch state.State {
+		case domain.WaitingOgo:
+			state.State = domain.WaitingOgoTimer
+			state.Count += 1
+			state.FirstOgo = time.Now().UTC()
+			state.LastOgo = time.Now().UTC()
+
+			b.BackgroundOgoTimer(ctx, c)
+		case domain.WaitingOgoTimer:
+			state.Count += 1
+		}
+	}
+
+	return nil
+}
+
+func (b *TgBot) GetOgoMeter(c telebot.Context) (*domain.OgoMeter, error) {
+	if state, ok := ogoMeter[c.Chat().ID]; ok {
+		return state, nil
+	}
+
+	newState := &domain.OgoMeter{
+		State: domain.WaitingOgo,
+	}
+
+	ogoMeter[c.Chat().ID] = newState
+	return newState, nil
+}
+
+func (b *TgBot) BackgroundOgoTimer(ctx context.Context, c telebot.Context) {
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	b.log.Info("BackgroundOgoTimer worker started")
+
+	select {
+	case <-ctx.Done():
+		b.log.Info("BackgroundTimer worker stopped")
+		return
+	case <-ticker.C:
+		b.FinalOgoResult(c)
+	}
+}
+
+func (b *TgBot) FinalOgoResult(c telebot.Context) error {
+	state, err := b.GetOgoMeter(c)
+	if err != nil {
+		return err
+	}
+
+	switch state.Count {
+	case 2:
+		b.Bot.Send(&telebot.Chat{ID: c.Chat().ID}, fmt.Sprintf("Средний уровень ого обнаружен в чате. Будьте осторожнее.\n\nОценка уровня по шкале Огометра: %d", state.Count))
+	case 3:
+		b.Bot.Send(&telebot.Chat{ID: c.Chat().ID}, fmt.Sprintf("Подозрительно высокая активность ого в чате. Пожалуйста, больше не позорьтесь.\n\nОценка уровня по шкале Огометра: %d", state.Count))
+	case 4:
+		b.Bot.Send(&telebot.Chat{ID: c.Chat().ID}, fmt.Sprintf("Огометр зашкаливает, прошу покиньте чат, мне кажется, вам тут не рады.\n\nОценка уровня по шкале Огометра: %d", state.Count))
+	}
+
+	state.State = domain.WaitingOgo
+
+	return nil
+}

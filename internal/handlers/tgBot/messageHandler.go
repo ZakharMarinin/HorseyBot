@@ -144,6 +144,7 @@ func (b *TgBot) MessageHandler(ctx context.Context) telebot.HandlerFunc {
 		}
 
 		if c.Chat().Type == telebot.ChatGroup {
+			b.OgoMeter(ctx, c)
 			b.SelectFeature(ctx, c)
 			b.AddUser(ctx, c)
 		}
