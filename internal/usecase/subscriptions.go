@@ -77,7 +77,6 @@ func (u *UseCase) GetExpiredSubs(ctx context.Context) (*[]domain.Subscription, e
 
 	subs, err := u.postgres.GetExpiredSubscriptions(ctx)
 	if err != nil {
-		u.log.Error("Cannot get subscriptions", "op", op, "error", err)
 		return nil, err
 	}
 

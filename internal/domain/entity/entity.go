@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 const (
 	WaitingCommand    = "waiting_command"
 	WaitingAction     = "waiting_action"
@@ -11,6 +13,8 @@ const (
 	WaitingFilter     = "waiting_for_filter"
 	WaitingFilterData = "waiting_filter_data"
 	WaitingChat       = "waiting_chat"
+	WaitingOgo        = "waiting_ogo"
+	WaitingOgoTimer   = "waiting_ogo_timer"
 )
 
 const (
@@ -59,4 +63,11 @@ type Store struct {
 	TrackedUser string `json:"tracked_user"`
 	StartTime   string `json:"start_time"`
 	LastMessage string `json:"last_message"`
+}
+
+type OgoMeter struct {
+	Count    int       `json:"count"`
+	FirstOgo time.Time `json:"first_ogo"`
+	LastOgo  time.Time `json:"last_ogo"`
+	State    string    `json:"state"`
 }
