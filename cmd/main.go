@@ -65,8 +65,11 @@ func main() {
 
 func botRun(cfg *config.Config, log *slog.Logger, useCase *usecase.UseCase) (*tgBot.TgBot, error) {
 	pref := telebot.Settings{
-		Token:  cfg.TgBot.TgToken,
-		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
+		Token: cfg.TgBot.TgToken,
+		Poller: &telebot.LongPoller{
+			Timeout:      10 * time.Second,
+			LastUpdateID: -1,
+		},
 	}
 
 	newBot, err := telebot.NewBot(pref)
