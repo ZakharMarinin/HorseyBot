@@ -327,7 +327,7 @@ func (p *PostgresStorage) GetExpiredSubscriptions(ctx context.Context) (*[]domai
 	query, args, err := sq.
 		Select("id", "chat_id", "user_id", "feature", "store").
 		From("subscriptions").
-		Where("((store->>'start_time')::timestamp + (store->>'threshold' || ' minutes')::interval) <= LOCALTIMESTAMP").
+		Where("((store->>'start_time')::timestamp + (store->>'threshold' || ' days')::interval) <= LOCALTIMESTAMP").
 		ToSql()
 
 	if err != nil {
